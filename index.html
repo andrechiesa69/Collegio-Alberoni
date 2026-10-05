@@ -1,133 +1,140 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esperienza AR Interattiva</title>
-    
-    <!-- Librerie A-Frame e MindAR per Image Tracking -->
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Realtà Aumentata - MindAR</title>
 
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
+  <!-- A-Frame Library -->
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  
+  <!-- MindAR per A-Frame -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
-        /* Overlay con istruzioni in alto */
-        #instruction-overlay {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.75);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            text-align: center;
-            pointer-events: none;
-        }
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-        /* Contenitore dei pulsanti in basso sullo schermo */
-        #ui-controls {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            display: flex;
-            gap: 15px;
-        }
+    /* Overlay con indicatore per l'utente */
+    #example-scanning-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
 
-        /* Stile dei pulsanti cliccabili */
-        .ar-btn {
-            background-color: #ffffff;
-            color: #1a252c;
-            border: 2px solid #f1c40f;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: all 0.2s ease;
-        }
+    .inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px 25px;
+      border-radius: 12px;
+      color: white;
+    }
 
-        .ar-btn:active {
-            transform: scale(0.95);
-            background-color: #f1c40f;
-        }
-    </style>
+    .scanline {
+      width: 200px;
+      height: 200px;
+      border: 2px dashed rgba(255, 255, 255, 0.8);
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* Nasconde l'overlay quando il target viene rilevato */
+    #example-scanning-overlay.hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-    <div id="instruction-overlay">
-        Inquadra l'immagine per attivare l'AR
+  <!-- Overlay visivo per la scansione -->
+  <div id="example-scanning-overlay">
+    <div class="inner">
+      <div class="scanline"></div>
+      <span>Inquadra l'immagine target</span>
     </div>
+  </div>
 
-    <!-- Pulsanti di navigazione a schermo fisso -->
-    <div id="ui-controls">
-        <button class="ar-btn" id="btn-facciata">Facciata</button>
-        <button class="ar-btn" id="btn-cardinale">Cardinale</button>
-        <button class="ar-btn" id="btn-storia">Storia</button>
-    </div>
+  <!-- Scena Realtà Aumentata (MindAR) -->
+  <!-- Modifica 'imageTargetSrc' specificando il percorso al tuo file .mind -->
+  <a-scene 
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiError: yes; uiScanning: #example-scanning-overlay;" 
+    embedded 
+    color-space="sRGB" 
+    renderer="colorManagement: true, physicallyCorrectLights" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false">
+    
+    <a-assets>
+      <!-- Risorse e immagini da visualizzare -->
+      <img id="cardinale-img" src="Cardinale_3.png">
+      <img id="storia-img" src="storia_3.png">
+      <img id="facciata-img" src="facciata_3.jpg">
+    </a-assets>
 
-    <a-scene 
-        mindar-image="imageTargetSrc: ./targets.mind;" 
-        color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights" 
-        vr-mode-ui="enabled: false" 
-        device-orientation-permission-ui="enabled: false">
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Target 0 (corrisponde alla prima immagine nel file .mind) -->
+    <a-entity mindar-image-target="targetIndex: 0">
       
-        <a-assets>
-            <img id="imgFacciata" src="facciata.jpg"> <!-- -->
-            <img id="imgCardinale" src="Cardinale.png"> <!--[cite: 9] -->
-            <img id="imgStoria" src="storia.png"> <!--[cite: 11] -->
-        </a-assets>
+      <!-- Pannello di sinistra (Storia) -->
+      <a-image 
+        src="#storia-img" 
+        position="-0.7 0 0" 
+        height="0.8" 
+        width="0.55" 
+        rotation="0 0 0">
+      </a-image>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <!-- Immagine centrale (Facciata) -->
+      <a-image 
+        src="#facciata-img" 
+        position="0 0 0" 
+        height="0.9" 
+        width="0.65" 
+        rotation="0 0 0">
+      </a-image>
 
-        <!-- Target AR: Si attiva quando inquadri la copertina -->
-        <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-            
-            <!-- UNICA IMMAGINE AR SOVRAPPOSTA AL CENTRO (Inizialmente la facciata) -->
-            <a-image 
-                id="main-display"
-                src="#imgFacciata" 
-                position="0 0 0" 
-                height="0.8" 
-                width="1" 
-                rotation="0 0 0">
-            </a-image>
+      <!-- Pannello di destra (Cardinale) -->
+      <a-image 
+        src="#cardinale-img" 
+        position="0.7 0 0" 
+        height="0.8" 
+        width="0.55" 
+        rotation="0 0 0">
+      </a-image>
 
-        </a-entity>
-    </a-scene>
+    </a-entity>
+  </a-scene>
 
-    <script>
-        const mainDisplay = document.querySelector('#main-display');
-        const btnFacciata = document.querySelector('#btn-facciata');
-        const btnCardinale = document.querySelector('#btn-cardinale');
-        const btnStoria = document.querySelector('#btn-storia');
+  <script>
+    // Listener di eventi per nascondere o mostrare la GUI di scansione
+    const overlay = document.querySelector('#example-scanning-overlay');
+    const sceneEl = document.querySelector('a-scene');
 
-        // Passa all'immagine della Facciata
-        btnFacciata.addEventListener('click', () => {
-            mainDisplay.setAttribute('src', '#imgFacciata');
-        });
+    sceneEl.addEventListener("targetFound", event => {
+      console.log("Target trovato!");
+      overlay.classList.add("hidden");
+    });
 
-        // Passa all'immagine del Cardinale
-        btnCardinale.addEventListener('click', () => {
-            mainDisplay.setAttribute('src', '#imgCardinale');
-        });
-
-        // Passa all'immagine della Storia
-        btnStoria.addEventListener('click', () => {
-            mainDisplay.setAttribute('src', '#imgStoria');
-        });
-    </script>
-
+    sceneEl.addEventListener("targetLost", event => {
+      console.log("Target perso.");
+      overlay.classList.remove("hidden");
+    });
+  </script>
 </body>
 </html>
